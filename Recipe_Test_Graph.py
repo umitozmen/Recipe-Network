@@ -65,57 +65,55 @@ if __name__ == "__main__":
     # df1['RecipeIngredientParts'] = df2
 
 
-    # G = nx.Graph()
-    # G.add_nodes_from([(0, {"name_":"Biryani", "type_":"Recipe"}),
-    #                 (1, {"name_":"Best Lemonade", "type_":"Recipe"})])
+    G = nx.Graph()
+    G.add_nodes_from([("0", {"name_":"Biryani", "type_":"Recipe"}),
+                    ("1", {"name_":"Best Lemonade", "type_":"Recipe"})])
     
-    # G.add_nodes_from([(2, {"name_":"blueberries", "type_":"Ingredient"}),
-    #                 (3, {"name_":"granulated sugar", "type_":"Ingredient"}),
-    #                 (4, {"name_":"vanilla yogurt", "type_":"Ingredient"}),
-    #                 (5, {"name_":"lemon juice", "type_":"Ingredient"}),
-    #                 (6, {"name_":"peppercorns", "type_":"Ingredient"})])
+    G.add_nodes_from([("2", {"name_":"blueberries", "type_":"Ingredient"}),
+                    ("3", {"name_":"granulated sugar", "type_":"Ingredient"}),
+                    ("4", {"name_":"vanilla yogurt", "type_":"Ingredient"}),
+                    ("5", {"name_":"lemon juice", "type_":"Ingredient"}),
+                    ("6", {"name_":"peppercorns", "type_":"Ingredient"})])
 
-    # G.add_edges_from([(0,3),(0,4),(0,5),(1,4),(1,3),(1,6)])
+    G.add_edges_from([("0","3"),("0","2"),("0","4"),("0","5"),("1","4"),("1","3"),("1","6")])
 
     
-    # nx.draw(G, with_labels=True, font_weight='bold')
-    # plt.axis('equal')
-    # plt.show()
+    #nx.draw(G, with_labels=True, font_weight='bold')
+    #plt.axis('equal')
+    #plt.show()
 
+    import networkx as nx
+    from node2vec import Node2Vec
+    from gensim.models import KeyedVectors
 
-    # import dgl
-    # import dglke
-    # g = dgl.from_networkx(G)
-    # #print(g.nodes())
-    # #print(g.edges())
+    # Create a graph
 
-    # from dgl.data.utils import save_graphs
-    # save_graphs("./data.bin", [g])
+    # Precompute probabilities and generate walks - **ON WINDOWS ONLY WORKS WITH workers=1**
+    node2vec = Node2Vec(G, dimensions=64, walk_length=3, num_walks=20, workers=4)  # Use temp_folder for big graphs
 
-    # test_directory = Path(__file__).parent / 'dataset'
-    # dataset_file = [test_directory/'relations.tsv']
-    # df1 = pd.read_csv(dataset_file[0], delimiter='\t')
+    # Embed nodes
+    model = node2vec.fit(window=10, min_count=1, batch_words=4)  
+    # Any keywords acceptable by gensim.Word2Vec can be passed, `dimensions` and `workers` are automatically passed (from the Node2Vec constructor)
 
+    # Look for most similar nodes
+    #model.wv.most_similar('2')  # Output node names are always strings
 
-    # df1.to_csv("./dataset/test.txt", header = None, index = None, sep = "\t")
+    # Save embeddings for later use
+    node_vectors = model.wv
+    
+    # Save model for later use
+    node_vectors.save("word2vec.wordvectors")
 
-    import subprocess
-    subprocess.run(["dglke_train","--model_name", "TransE_l2",\
-                "--batch_size", "1000",\
-                "--neg_sample_size", "200", \
-                "--hidden_dim", "400", \
-                "--gamma", "19.9", \
-                "--lr", "0.25", \
-                "--max_step", "24000", \
-                "--log_interval", "100", \
-                "--batch_size_eval", "16", \
-                "-adv", \
-                "--regularization_coef", "1.00E-09", \
-                "--gpu", "0", \
-                "--save_path", "./data", \
-                "--data_path", "./dataset/", \
-                "--format", "raw_udd_hrt", \
-                "--data_files", "train.tsv", \
-                "--dataset", "xxx",\
-                "--neg_sample_size_eval", "10000"
-                ], stdout=subprocess.PIPE)
+    wv = KeyedVectors.load("word2vec.wordvectors", mmap='r')
+    # Load back with memory-mapping = read-only, shared across processes.
+
+    A = (wv['0'])
+    B = (wv['1'])
+
+    import scipy.spatial.distance as dist
+
+    print('Euclidean distance is', dist.euclidean(A, B))
+    print('Manhattan distance is', dist.cityblock(A, B))
+    print('Chebyshev distance is', dist.chebyshev(A, B))
+    print('Canberra distance is', dist.canberra(A, B))
+    print('Cosine distance is', dist.cosine(A, B))
