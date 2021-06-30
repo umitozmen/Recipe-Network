@@ -100,22 +100,27 @@ if __name__ == "__main__":
     # df1.to_csv("./dataset/test.txt", header = None, index = None, sep = "\t")
 
     import subprocess
-    subprocess.run(["dglke_train","--model_name", "TransE_l2",\
-                "--batch_size", "1000",\
-                "--neg_sample_size", "1", \
-                "--hidden_dim", "4", \
-                "--gamma", "19.9", \
-                "--lr", "0.25", \
-                "--max_step", "30", \
-                "--log_interval", "10", \
-                "--batch_size_eval", "16", \
-                "-adv", \
-                "--regularization_coef", "1.00E-09", \
-                "--save_path", "./data", \
-                "--data_path", "./dataset/", \
-                "--format", "raw_udd_hrt", \
-                "--data_files", "train.tsv", \
-                "--dataset", "xxx",\
-                "--neg_sample_size_eval", "10000",\
-                "--num_thread", "1",\
-                "--num_proc", "1"], stdout=subprocess.PIPE)
+    # subprocess.run(["dglke_train","--model_name", "TransE_l2",\
+    #             "--batch_size", "1000",\
+    #             "--neg_sample_size", "1", \
+    #             "--hidden_dim", "4", \
+    #             "--gamma", "19.9", \
+    #             "--lr", "0.25", \
+    #             "--max_step", "30", \
+    #             "--log_interval", "10", \
+    #             "--batch_size_eval", "16", \
+    #             "-adv", \
+    #             "--regularization_coef", "1.00E-09", \
+    #             "--save_path", "./data", \
+    #             "--data_path", "./dataset/", \
+    #             "--format", "raw_udd_hrt", \
+    #             "--data_files", "train.tsv", \
+    #             "--dataset", "xxx",\
+    #             "--neg_sample_size_eval", "10000",\
+    #             "--num_thread", "1",\
+    #             "--num_proc", "1"], stdout=subprocess.PIPE)
+
+    subprocess.run(["dglke_emb_sim ",\
+            "--emb_file", "data/TransE_l2_xxx_7/xxx_TransE_l2_entity.npy",\
+            "--format", "l_r", \
+            "--data_files", "head.list", "tail.list"], stdout=subprocess.PIPE)
