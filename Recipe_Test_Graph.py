@@ -1,11 +1,11 @@
 from pathlib import Path
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt # plotting
-import numpy as np # linear algebra
+#from mpl_toolkits.mplot3d import Axes3D
+#from sklearn.preprocessing import StandardScaler
+#import matplotlib.pyplot as plt # plotting
+#import numpy as np # linear algebra
 import os # accessing directory structure
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import networkx as nx
+#import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+#import networkx as nx
 
 def get_file_names():
     for dirname, _, filenames in os.walk('dataset'):
@@ -102,20 +102,20 @@ if __name__ == "__main__":
     import subprocess
     subprocess.run(["dglke_train","--model_name", "TransE_l2",\
                 "--batch_size", "1000",\
-                "--neg_sample_size", "200", \
-                "--hidden_dim", "400", \
+                "--neg_sample_size", "1", \
+                "--hidden_dim", "4", \
                 "--gamma", "19.9", \
                 "--lr", "0.25", \
-                "--max_step", "24000", \
-                "--log_interval", "100", \
+                "--max_step", "30", \
+                "--log_interval", "10", \
                 "--batch_size_eval", "16", \
                 "-adv", \
                 "--regularization_coef", "1.00E-09", \
-                "--gpu", "0", \
                 "--save_path", "./data", \
                 "--data_path", "./dataset/", \
                 "--format", "raw_udd_hrt", \
                 "--data_files", "train.tsv", \
                 "--dataset", "xxx",\
-                "--neg_sample_size_eval", "10000"
-                ], stdout=subprocess.PIPE)
+                "--neg_sample_size_eval", "10000",\
+                "--num_thread", "1",\
+                "--num_proc", "1"], stdout=subprocess.PIPE)
