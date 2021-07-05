@@ -13,6 +13,7 @@ def get_sample_file(nRowsRead=None):
     dataset_file = [main_directory/'recipes.csv']
     col_list = ["RecipeId","Name","RecipeCategory","RecipeIngredientQuantities","RecipeIngredientParts","AggregatedRating","ReviewCount"]
     dtype_dic= { 'RecipeId':int, 'Name':str, 'RecipeCategory':str, 'RecipeIngredientQuantities':str, 'RecipeIngredientParts':str, 'AggregatedRating':float, 'ReviewCount':float }
+    
     #nRowsRead specify 'None' if want to read whole file
     
     df1 = pd.read_csv(dataset_file[0], delimiter=',', usecols=col_list, dtype = dtype_dic).sample(nRowsRead, random_state=44)
@@ -21,14 +22,11 @@ def get_sample_file(nRowsRead=None):
 
     #df1.to_csv(f"./dataset/{nRowsRead}_samples.csv", index = None, sep = ",")
 
-    return df1 #, print(f"./dataset/{nRowsRead}_samples.csv created")
+    return df1 , print(f"./dataset/{nRowsRead}_samples.csv created")
 
-if __name__ == "__main__":
-
-    nRowsRead = 1000
-    col_list_to_tidy = ["Name","RecipeCategory","RecipeIngredientQuantities","RecipeIngredientParts"]
+def create_dlg_ke_relations(df1):
     
-    df1 = get_sample_file(nRowsRead)
+    col_list_to_tidy = ["Name","RecipeCategory","RecipeIngredientQuantities","RecipeIngredientParts"]
 
     for col in col_list_to_tidy:
         df1[col] = df1[col].str.replace('c("','', regex = False)
@@ -45,21 +43,34 @@ if __name__ == "__main__":
         for ing_val in rec_val:
             df_rel = df_rel.append({"head": ing_val.strip(), "rel" : "ingredient_of", "tail": df1.iloc[i]['Name'][0].strip()}, ignore_index=True)
 
+    #df_rel.to_csv("./dataset/train.tsv", header = None, index = None, sep = "\t")
 
-    df1.to_csv(f"./dataset/{nRowsRead}_samples.csv", index = None, sep = ",")
-    df_rel.to_csv("./dataset/train.tsv", header = None, index = None, sep = "\t")
-    #df1['RecipeIngredientParts'] = df2
+    return df_rel
 
+if __name__ == "__main__":
+
+    nRowsRead = 1000
+
+    
+    df1 = get_sample_file(nRowsRead)
+
+    df_rel = create_dlg_ke_relations(df1)
+
+    G = nx.Graph()
+
+    for i, ing in enumerate(df_rel['head']):
+        G.add_nodes_from([(f'i{i}', {"name_": ing, "type_":"Ingredient"})])
+    
+    for i, rec in enumerate(df_rel['tail']):
+        G.add_nodes_from([(f'r{i}', {"name_": rec, "type_":"Recipe"})])
+
+    print(G.number_of_nodes())
 
     # G = nx.Graph()
     # G.add_nodes_from([(0, {"name_":"Biryani", "type_":"Recipe"}),
     #                 (1, {"name_":"Best Lemonade", "type_":"Recipe"})])
     
-    # G.add_nodes_from([(2, {"name_":"blueberries", "type_":"Ingredient"}),
-    #                 (3, {"name_":"granulated sugar", "type_":"Ingredient"}),
-    #                 (4, {"name_":"vanilla yogurt", "type_":"Ingredient"}),
-    #                 (5, {"name_":"lemon juice", "type_":"Ingredient"}),
-    #                 (6, {"name_":"peppercorns", "type_":"Ingredient"})])
+
 
     # G.add_edges_from([(0,3),(0,4),(0,5),(1,4),(1,3),(1,6)])
 
@@ -68,10 +79,3 @@ if __name__ == "__main__":
     # plt.axis('equal')
     # plt.show()
 
-
-    # test_directory = Path(__file__).parent / 'dataset'
-    # dataset_file = [test_directory/'relations.tsv']
-    # df1 = pd.read_csv(dataset_file[0], delimiter='\t')
-
-
-    # df1.to_csv("./dataset/test.txt", header = None, index = None, sep = "\t")
