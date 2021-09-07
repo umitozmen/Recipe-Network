@@ -53,26 +53,82 @@ if __name__ == "__main__":
     
     #df1 = get_sample_file(nRowsRead, col_list_to_tidy)
 
-    main_directory = Path(__file__).parent / 'dataset'
+    # main_directory = Path(__file__).parent / 'dataset'
      
-    all_files = glob.glob(os.path.join(main_directory, "*.tsv")) 
+    # all_files = glob.glob(os.path.join(main_directory, "*.tsv")) 
 
-    df_from_each_file = (pd.read_csv(f) for f in all_files)
-    concatenated_df   = pd.concat(df_from_each_file, ignore_index=True)
+    # df_from_each_file = (pd.read_csv(f) for f in all_files)
+    # concatenated_df   = pd.concat(df_from_each_file, ignore_index=True)
     
-    concatenated_df.to_csv(f"./dataset/train_allset.tsv", header = None, index = None, sep = "\t")
-    # G = nx.Graph()
+    # concatenated_df.to_csv(f"./dataset/train_allset.tsv", header = None, index = None, sep = "\t")
+    ##################################
+    main_directory = Path(__file__).parent.parent / 'dataset recipe'
+    dataset_file = [main_directory/'ta.tsv']
+    
+    df_rel = pd.read_csv(dataset_file[0], delimiter='\t', error_bad_lines=False)
+    df_rel.columns = ["head", "rel", "tail"]
+    G = nx.MultiDiGraph()
 
-    # for i, rec in enumerate(df_rel['tail']):
-    #     G.add_nodes_from([(rec, {"id_": f'r{i}', "type_":"Recipe"})])
+    for i, rec in enumerate(df_rel['tail']):
+        G.add_nodes_from([(rec, {"id_": f'r{i}', "type_":"Recipe"})])
 
-    # for i, ing in enumerate(df_rel['head']):
-    #     G.add_nodes_from([(ing, {"id_": f'i{i}', "type_":"Ingredient"})])
-    #     G.add_edges_from([(ing,df_rel.iloc[i]['tail'])])
+    for i, ing in enumerate(df_rel['head']):
+        G.add_nodes_from([(ing, {"id_": f'i{i}', "type_":"Ingredient"})])
+        G.add_edges_from([(ing,df_rel.iloc[i]['tail'])])
 
-    # print(G.number_of_nodes())
-    # print(G.number_of_edges())
-   
+
+    # import pickle
+
+    # pickle.dump(G, open('/tmp/graph.txt', 'w'))
+    # ##################################################
+    # G = pickle.load(open('/tmp/graph.txt'))   
+    
+    print(G.number_of_nodes())
+    print(G.number_of_edges())
+    print(f'Density is {nx.density(G)}')
+    try:
+        print(f'average_shortest_path_length is {nx.average_shortest_path_length(G)}')
+    except: 
+        pass
+
+    try:
+        print(f'diameter is {nx.diameter(G)}')
+    except: 
+        pass
+    
+    try:
+        print(f'eccentricity is {nx.eccentricity(G)}')
+    except: 
+        pass
+
+    try:
+        print(f'average_shortest_path_length is {nx.average_shortest_path_length(G, weighted=False)}')
+    except: 
+        pass
+
+    try:
+        print(f'transitivity is {nx.transitivity(G)}')
+    except: 
+        pass
+
+    # try:
+    #     print(f'degree_centrality is {nx.degree_centrality(G)}')
+    # except: 
+    #     pass
+
+    # def plot_degree_dist(G):
+    #     degrees = [G.degree(n) for n in G.nodes()]
+    #     plt.hist(degrees)
+    #     plt.show()
+
+    # plot_degree_dist(G)
+
+    import random
+    k = 100000
+    sampled_nodes = random.sample(G.nodes, k)
+    sampled_graph = G.subgraph(sampled_nodes)
+    print(nx.average_node_connectivity(sampled_graph, flow_func=None))
+
     # nx.draw(G, with_labels=False)
     # plt.axis('equal')
     # plt.show()
